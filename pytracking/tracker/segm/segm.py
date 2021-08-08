@@ -490,7 +490,7 @@ class Segm(BaseTracker):
         # Apply projection matrix
         if proj_matrix is None:
             proj_matrix = self.projection_matrix
-        return operation.conv2d(x, proj_matrix).apply(self.projection_activation)
+        return operation.conv2d(x[ 0 ], proj_matrix).apply(self.projection_activation)
 
     def init_learning(self):
         # Get window function

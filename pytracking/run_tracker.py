@@ -2,6 +2,9 @@ import os
 import sys
 import argparse
 
+import matplotlib
+matplotlib.use('TkAgg')
+
 env_path = os.path.join(os.path.dirname(__file__), '..')
 if env_path not in sys.path:
     sys.path.append(env_path)

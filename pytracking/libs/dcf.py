@@ -8,7 +8,7 @@ import torch.nn.functional as F
 def hann1d(sz: int, centered = True) -> torch.Tensor:
     """1D cosine window."""
     if centered:
-        return 0.5 * (1 - torch.cos((2 * math.pi / (sz + 2)) * torch.arange(1, sz + 1).float()))
+        return 0.5 * (1 - torch.cos((2 * math.pi / (sz + 1)) * torch.arange(1, sz + 1).float()))
     w = 0.5 * (1 + torch.cos((2 * math.pi / (sz + 2)) * torch.arange(0, sz//2 + 1).float()))
     return torch.cat([w, w[1:sz-sz//2].flip((0,))])
 
@@ -25,7 +25,7 @@ def hann2d_clipped(sz: torch.Tensor, effective_sz: torch.Tensor, centered = True
     effective_sz += (effective_sz - sz) % 2
     effective_window = hann1d(effective_sz[0].item(), True).reshape(1, 1, -1, 1) * hann1d(effective_sz[1].item(), True).reshape(1, 1, 1, -1)
 
-    pad = (sz - effective_sz) / 2
+    pad = (sz - effective_sz) // 2
 
     window = F.pad(effective_window, (pad[1].item(), pad[1].item(), pad[0].item(), pad[0].item()), 'replicate')
 

@@ -25,8 +25,7 @@ def conv2d(input: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor = None,
             padding = (weight.shape[2]-1, weight.shape[3]-1)
         else:
             raise ValueError('Unknown mode for padding.')
-
-    out = F.conv2d(input, weight, bias=bias, stride=stride, padding=padding, dilation=dilation, groups=groups)
+    out = F.conv2d(input=input, weight=weight, bias=bias, stride=stride, padding=padding, dilation=dilation, groups=groups)
     if ind is None:
         return out
     return out[:,:,ind[0],ind[1]]
@@ -39,5 +38,4 @@ def conv1x1(input: torch.Tensor, weight: torch.Tensor):
     if weight is None:
         return input
 
-    return torch.matmul(weight.view(weight.shape[0], weight.shape[1]),
-                        input.view(input.shape[0], input.shape[1], -1)).view(input.shape[0], weight.shape[0], input.shape[2], input.shape[3])
+    return torch.conv2d(input, weight)

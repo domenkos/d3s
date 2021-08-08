@@ -1,7 +1,9 @@
 import torch
 import torch.autograd
+import math
 from pytracking.libs import TensorList
 from pytracking.utils.plotting import plot_graph
+from ltr.models.layers.activation import softmax_reg
 
 
 class L2Problem:
@@ -27,7 +29,6 @@ class L2Problem:
         """M2 preconditioner."""
         return x
 
-
 class MinimizationProblem:
     """General minimization problem."""
     def __call__(self, x: TensorList) -> TensorList:
@@ -43,7 +44,6 @@ class MinimizationProblem:
 
     def M2(self, x):
         return x
-
 
 
 class ConjugateGradientBase:
@@ -207,6 +207,7 @@ class ConjugateGradient(ConjugateGradientBase):
         self.x = variable
 
         self.plotting = plotting
+        self.fig_num = (10,11)
         self.fig_num = fig_num
 
         self.cg_eps = cg_eps
@@ -224,7 +225,7 @@ class ConjugateGradient(ConjugateGradientBase):
 
 
     def run(self, num_cg_iter):
-        """Run the oprimizer with the provided number of iterations."""
+        """Run the optimizer with the provided number of iterations."""
 
         if num_cg_iter == 0:
             return
@@ -299,6 +300,7 @@ class GaussNewtonCG(ConjugateGradientBase):
 
         self.analyze_convergence = analyze
         self.plotting = plotting
+        self.fig_num = (10,11,12)
         self.fig_num = fig_num
 
         self.cg_eps = cg_eps
@@ -427,7 +429,7 @@ class GaussNewtonCG(ConjugateGradientBase):
 class GradientDescentL2:
     """Gradient descent with momentum for L2 problems."""
 
-    def __init__(self, problem: L2Problem, variable: TensorList, step_length: float, momentum: float = 0.0, debug = False, plotting = False, fig_num=(10,11)):
+    def __init__(self, problem: L2Problem, variable: TensorList, step_length: float, momentum: float = 0.0, debug = False, plotting = False ):
 
         self.problem = problem
         self.x = variable
@@ -437,8 +439,7 @@ class GradientDescentL2:
 
         self.debug = debug or plotting
         self.plotting = plotting
-        self.fig_num = fig_num
-
+        self.fig_num = (10,11)
         self.losses = torch.zeros(0)
         self.gradient_mags = torch.zeros(0)
         self.residuals = None
@@ -495,6 +496,7 @@ class GradientDescentL2:
             grad_mags[-1] = sum(grad.view(-1) @ grad.view(-1)).cpu().sqrt().item()
             self.losses = torch.cat((self.losses, lossvec))
             self.gradient_mags = torch.cat((self.gradient_mags, grad_mags))
+
             if self.plotting:
                 plot_graph(self.losses, self.fig_num[0], title='Loss')
                 plot_graph(self.gradient_mags, self.fig_num[1], title='Gradient magnitude')
