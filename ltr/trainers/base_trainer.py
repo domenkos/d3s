@@ -1,11 +1,12 @@
 import os
 import glob
 import torch
-from ltr.admin import loading
+import traceback
+from ltr.admin import loading, multigpu
 
 
 class BaseTrainer:
-    """Base trainer class. Contains functions for training and saving/loading chackpoints.
+    """Base trainer class. Contains functions for training and saving/loading checkpoints.
     Trainer classes should inherit from this one and overload the train_epoch function."""
 
     def __init__(self, actor, loaders, optimizer, settings, lr_scheduler=None):
@@ -66,17 +67,20 @@ class BaseTrainer:
                 for epoch in range(self.epoch+1, max_epochs+1):
                     self.epoch = epoch
 
+                    self.train_epoch()
+
                     if self.lr_scheduler is not None:
                         self.lr_scheduler.step()
-
-                    self.train_epoch()
 
                     if self._checkpoint_dir:
                         self.save_checkpoint()
             except:
                 print('Training crashed at epoch {}'.format(epoch))
                 if fail_safe:
+                    self.epoch -= 1
                     load_latest = True
+                    print('Traceback for the error!')
+                    print(traceback.format_exc())
                     print('Restarting training from last epoch ...')
                 else:
                     raise
@@ -91,15 +95,17 @@ class BaseTrainer:
     def save_checkpoint(self):
         """Saves a checkpoint of the network and other variables."""
 
+        net = self.actor.net.module if multigpu.is_multi_gpu(self.actor.net) else self.actor.net
+
         actor_type = type(self.actor).__name__
-        net_type = type(self.actor.net).__name__
+        net_type = type(net).__name__
         state = {
             'epoch': self.epoch,
             'actor_type': actor_type,
             'net_type': net_type,
-            'net': self.actor.net.state_dict(),
-            'net_info': getattr(self.actor.net, 'info', None),
-            'constructor': getattr(self.actor.net, 'constructor', None),
+            'net': net.state_dict(),
+            'net_info': getattr(net, 'info', None),
+            'constructor': getattr(net, 'constructor', None),
             'optimizer': self.optimizer.state_dict(),
             'stats': self.stats,
             'settings': self.settings
@@ -110,8 +116,14 @@ class BaseTrainer:
         if not os.path.exists(directory):
             os.makedirs(directory)
 
+        # First save as a tmp file
+        tmp_file_path = '{}/{}_ep{:04d}.tmp'.format(directory, net_type, self.epoch)
+        torch.save(state, tmp_file_path)
+
         file_path = '{}/{}_ep{:04d}.pth.tar'.format(directory, net_type, self.epoch)
-        torch.save(state, file_path)
+
+        # Now rename to actual checkpoint. os.rename seems to be atomic if files are on same filesystem. Not 100% sure
+        os.rename(tmp_file_path, file_path)
 
 
     def load_checkpoint(self, checkpoint = None, fields = None, ignore_fields = None, load_constructor = False):
@@ -126,8 +138,10 @@ class BaseTrainer:
                 Loads the file from the given absolute path (str).
         """
 
+        net = self.actor.net.module if multigpu.is_multi_gpu(self.actor.net) else self.actor.net
+
         actor_type = type(self.actor).__name__
-        net_type = type(self.actor.net).__name__
+        net_type = type(net).__name__
 
         if checkpoint is None:
             # Load most recent checkpoint
@@ -144,7 +158,14 @@ class BaseTrainer:
                                                                  net_type, checkpoint)
         elif isinstance(checkpoint, str):
             # checkpoint is the path
-            checkpoint_path = os.path.expanduser(checkpoint)
+            if os.path.isdir(checkpoint):
+                checkpoint_list = sorted(glob.glob('{}/*_ep*.pth.tar'.format(checkpoint)))
+                if checkpoint_list:
+                    checkpoint_path = checkpoint_list[-1]
+                else:
+                    raise Exception('No checkpoint found')
+            else:
+                checkpoint_path = os.path.expanduser(checkpoint)
         else:
             raise TypeError
 
@@ -166,7 +187,7 @@ class BaseTrainer:
             if key in ignore_fields:
                 continue
             if key == 'net':
-                self.actor.net.load_state_dict(checkpoint_dict[key])
+                net.load_state_dict(checkpoint_dict[key])
             elif key == 'optimizer':
                 self.optimizer.load_state_dict(checkpoint_dict[key])
             else:
@@ -174,16 +195,12 @@ class BaseTrainer:
 
         # Set the net info
         if load_constructor and 'constructor' in checkpoint_dict and checkpoint_dict['constructor'] is not None:
-            self.actor.net.constructor = checkpoint_dict['constructor']
+            net.constructor = checkpoint_dict['constructor']
         if 'net_info' in checkpoint_dict and checkpoint_dict['net_info'] is not None:
-            self.actor.net.info = checkpoint_dict['net_info']
+            net.info = checkpoint_dict['net_info']
 
         # Update the epoch in lr scheduler
         if 'epoch' in fields:
             self.lr_scheduler.last_epoch = self.epoch
 
         return True
-
-
-
-

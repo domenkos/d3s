@@ -9,7 +9,10 @@ from pytracking import TensorDict, TensorList
 def _check_use_shared_memory():
     if hasattr(torch.utils.data.dataloader, '_use_shared_memory'):
         return getattr(torch.utils.data.dataloader, '_use_shared_memory')
-    return importlib.import_module('torch.utils.data._utils.collate')._use_shared_memory
+    collate_lib = importlib.import_module('torch.utils.data._utils.collate')
+    if hasattr(collate_lib, '_use_shared_memory'):
+        return getattr(collate_lib, '_use_shared_memory')
+    return torch.utils.data.get_worker_info() is not None
 
 
 def ltr_collate(batch):
@@ -152,7 +155,7 @@ class LTRLoader(torch.utils.data.dataloader.DataLoader):
 
     .. note:: By default, each worker will have its PyTorch seed set to
               ``base_seed + worker_id``, where ``base_seed`` is a long generated
-              by main process using its RNG. However, seeds for other libraies
+              by main process using its RNG. However, seeds for other libraries
               may be duplicated upon initializing workers (w.g., NumPy), causing
               each worker to return identical random numbers. (See
               :ref:`dataloader-workers-random-seed` section in FAQ.) You may

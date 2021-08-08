@@ -1,2 +1,3 @@
 from .base_actor import BaseActor
-from .segm_actor import SegmActor
+from .bbreg import AtomActor
+from .tracking import DiMPActor, KYSActor
