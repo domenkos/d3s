@@ -1,162 +1,74 @@
-# PyTracking
-A general python framework for visual object tracking and video object segmentation, based on **PyTorch**.
+# D3S - A Discriminative Single Shot Segmentation Tracker [CVPR2020]
 
-### LWL and KYS released!
-* Code for our **ECCV 2020 oral** paper [Learning What to Learn for Video Object Segmentation](https://arxiv.org/abs/2003.11540) is now available.  
-* Code for our **ECCV 2020** paper [Know Your Surroundings: Exploiting Scene Information for Object Tracking](https://arxiv.org/abs/2003.11014) is now available.  
+Python (PyTorch) implementation of the D3S tracker, presented at CVPR 2020.
 
+## Publication:
+Alan Lukežič, Jiří Matas and Matej Kristan.
+<b>D3S - A Discriminative Single Shot Segmentation Tracker.</b>
+<i>IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) 2020</i>.</br>
+[Paper](https://arxiv.org/abs/1911.08862) </br>
 
-## Highlights
+<b>BibTex citation:</b></br>
+@InProceedings{Lukezic_CVPR_2020,<br>
+Title = {D3S - A Discriminative Single Shot Segmentation Tracker},<br>
+Author = {Lukezic, Alan and Matas, Jiri and Kristan, Matej},<br>
+Booktitle = {CVPR},<br>
+Year = {2020}<br>
+}
 
-### LWL, KYS, PrDiMP, DiMP and ATOM Trackers
+## Summary of the D3S tracker
+Template-based discriminative trackers are currently the dominant tracking paradigm due to their robustness, but are restricted to bounding box tracking and a limited range of transformation models, which reduces their localization accuracy. We propose a discriminative single-shot segmentation tracker -- D3S, which narrows the gap between visual object tracking and video object segmentation. A single-shot network applies two target models with complementary geometric properties, one invariant to a broad range of transformations, including non-rigid deformations, the other assuming a rigid object to simultaneously achieve high robustness and online target segmentation. Without per-dataset finetuning and trained only for segmentation as the primary output, D3S outperforms all trackers on VOT2016, VOT2018 and GOT-10k benchmarks and performs close to the  state-of-the-art trackers on the TrackingNet. D3S outperforms the leading segmentation tracker SiamMask on video  object segmentation benchmarks and performs on par with top video object segmentation algorithms, while running an order of magnitude faster, close to real-time.
 
-Official implementation of the **LWL** (ECCV 2020), **KYS** (ECCV 2020), **PrDiMP** (CVPR 2020), **DiMP** (ICCV 2019), and 
-**ATOM** (CVPR 2019) trackers, including complete **training code** and trained models.
-
-### [Tracking Libraries](pytracking)
-
-Libraries for implementing and evaluating visual trackers. It includes
-
-* All common **tracking** and **video object segmentation** datasets.  
-* Scripts to **analyse** tracker performance and obtain standard performance scores.
-* General building blocks, including **deep networks**, **optimization**, **feature extraction** and utilities for **correlation filter** tracking.  
-
-### [Training Framework: LTR](ltr)
- 
-**LTR** (Learning Tracking Representations) is a general framework for training your visual tracking networks. It is equipped with
-
-* All common **training datasets** for visual object tracking and segmentation.  
-* Functions for data **sampling**, **processing** etc.  
-* Network **modules** for visual tracking.
-* And much more...
-
-
-## Trackers
-The toolkit contains the implementation of the following trackers.  
-
-### LWL
-**[[Paper]](https://arxiv.org/pdf/2003.11540.pdf)  [[Raw results]](MODEL_ZOO.md#Raw-Results-1)
-  [[Models]](MODEL_ZOO.md#Models-1)  [[Training Code]](./ltr/README.md#LWL)  [[Tracker Code]](./pytracking/README.md#LWL)**
-    
-Official implementation of the **LWL** tracker. LWL is an end-to-end trainable video object segmentation architecture
-which captures the current target object information in a compact parametric
-model. It integrates a differentiable few-shot learner module, which predicts the
-target model parameters using the first frame annotation. The learner is designed
-to explicitly optimize an error between target model prediction and a ground
-truth label. LWL further learns the ground-truth labels used by the
-few-shot learner to train the target model. All modules in the architecture are trained end-to-end by maximizing segmentation accuracy on annotated VOS videos. 
-
-![LWL overview figure](pytracking/.figs/lwtl_overview.png)
-
-### KYS
-**[[Paper]](https://arxiv.org/pdf/2003.11014.pdf)  [[Raw results]](MODEL_ZOO.md#Raw-Results)
-  [[Models]](MODEL_ZOO.md#Models)  [[Training Code]](./ltr/README.md#KYS)  [[Tracker Code]](./pytracking/README.md#KYS)**
-    
-Official implementation of the **KYS** tracker. Unlike conventional frame-by-frame detection based tracking, KYS 
-propagates valuable scene information through the sequence. This information is used to
-achieve an improved scene-aware target prediction in each frame. The scene information is represented using a dense 
-set of localized state vectors. These state vectors are propagated through the sequence and combined with the appearance
-model output to localize the target. The network is learned to effectively utilize the scene information by directly maximizing tracking performance on video segments
-![KYS overview figure](pytracking/.figs/kys_overview.png)
-
-### PrDiMP
-**[[Paper]](https://arxiv.org/pdf/2003.12565)  [[Raw results]](MODEL_ZOO.md#Raw-Results)
-  [[Models]](MODEL_ZOO.md#Models)  [[Training Code]](./ltr/README.md#PrDiMP)  [[Tracker Code]](./pytracking/README.md#DiMP)**
-    
-Official implementation of the **PrDiMP** tracker. This work proposes a general 
-formulation for probabilistic regression, which is then applied to visual tracking in the DiMP framework.
-The network predicts the conditional probability density of the target state given an input image.
-The probability density is flexibly parametrized by the neural network itself.
-The regression network is trained by directly minimizing the Kullback-Leibler divergence. 
-
-### DiMP
-**[[Paper]](https://arxiv.org/pdf/1904.07220)  [[Raw results]](MODEL_ZOO.md#Raw-Results)
-  [[Models]](MODEL_ZOO.md#Models)  [[Training Code]](./ltr/README.md#DiMP)  [[Tracker Code]](./pytracking/README.md#DiMP)**
-    
-Official implementation of the **DiMP** tracker. DiMP is an end-to-end tracking architecture, capable
-of fully exploiting both target and background appearance
-information for target model prediction. It is based on a target model prediction network, which is derived from a discriminative
-learning loss by applying an iterative optimization procedure. The model prediction network employs a steepest descent 
-based methodology that computes an optimal step length in each iteration to provide fast convergence. The model predictor also
-includes an initializer network that efficiently provides an initial estimate of the model weights.  
-
-![DiMP overview figure](pytracking/.figs/dimp_overview.png)
- 
-### ATOM
-**[[Paper]](https://arxiv.org/pdf/1811.07628)  [[Raw results]](MODEL_ZOO.md#Raw-Results)
-  [[Models]](MODEL_ZOO.md#Models)  [[Training Code]](./ltr/README.md#ATOM)  [[Tracker Code]](./pytracking/README.md#ATOM)**  
- 
-Official implementation of the **ATOM** tracker. ATOM is based on 
-(i) a **target estimation** module that is trained offline, and (ii) **target classification** module that is 
-trained online. The target estimation module is trained to predict the intersection-over-union (IoU) overlap 
-between the target and a bounding box estimate. The target classification module is learned online using dedicated 
-optimization techniques to discriminate between the target object and background.
- 
-![ATOM overview figure](pytracking/.figs/atom_overview.png)
- 
-### ECO
-**[[Paper]](https://arxiv.org/pdf/1611.09224.pdf)  [[Models]](https://drive.google.com/open?id=1aWC4waLv_te-BULoy0k-n_zS-ONms21S)  [[Tracker Code]](./pytracking/README.md#ECO)**  
-
-An unofficial implementation of the **ECO** tracker. It is implemented based on an extensive and general library for [complex operations](pytracking/libs/complex.py) and [Fourier tools](pytracking/libs/fourier.py). The implementation differs from the version used in the original paper in a few important aspects. 
-1. This implementation uses features from vgg-m layer 1 and resnet18 residual block 3.   
-2. As in our later [UPDT tracker](https://arxiv.org/pdf/1804.06833.pdf), seperate filters are trained for shallow and deep features, and extensive data augmentation is employed in the first frame.  
-3. The GMM memory module is not implemented, instead the raw projected samples are stored.  
-
-Please refer to the [official implementation of ECO](https://github.com/martin-danelljan/ECO) if you are looking to reproduce the results in the ECO paper or download the raw results.
-
-
-## [Model Zoo](MODEL_ZOO.md)
-The tracker models trained using PyTracking, along with their results on standard tracking 
-benchmarks are provided in the [model zoo](MODEL_ZOO.md). 
-
+<p style="width:100%, text-align:center"><a href="url"><img src="https://raw.githubusercontent.com/alanlukezic/d3s/master/pytracking/utils/d3s-architecture.png" width="640"></a></p>
 
 ## Installation
 
 #### Clone the GIT repository.  
 ```bash
-git clone https://github.com/visionml/pytracking.git
+git clone https://github.com/alanlukezic/d3s.git .
 ```
-   
-#### Clone the submodules.  
-In the repository directory, run the commands:  
-```bash
-git submodule update --init  
-```  
+
 #### Install dependencies
 Run the installation script to install all the dependencies. You need to provide the conda install path (e.g. ~/anaconda3) and the name for the created conda environment (here ```pytracking```).  
 ```bash
 bash install.sh conda_install_path pytracking
-```  
-This script will also download the default networks and set-up the environment.  
+```
+To install the dependencies on a Windows machine, use the `install.bat` script.
+The pre-trained network for the D3S is not part of this repository. You can download it [here](http://data.vicos.si/alanl/d3s/SegmNet.pth.tar).
 
-**Note:** The install script has been tested on an Ubuntu 18.04 system. In case of issues, check the [detailed installation instructions](INSTALL.md). 
+The tracker was tested on the Ubuntu 16.04 machine with a NVidia GTX 1080 graphics card and cudatoolkit version 9.
+It was tested on Window 10 as well, but network training is tested on Linux only.
 
-**Windows:** (NOT Recommended!) Check [these installation instructions](INSTALL_win.md). 
-
-#### Let's test it!
-Activate the conda environment and run the script pytracking/run_webcam.py to run ATOM using the webcam input.  
+#### Test the tracker
+1.) Specify the path to the D3S [pre-trained segmentation network](http://data.vicos.si/alanl/d3s/SegmNet.pth.tar) by setting the `params.segm_net_path` in the `pytracking/parameters/segm/default_params.py`. <br/>
+2.) Specify the path to the VOT 2018 dataset by setting the `vot18_path` in the `pytracking/evaluation/local.py`. <br/>
+3.) Activate the conda environment
 ```bash
 conda activate pytracking
+```
+4.) Run the script pytracking/run_tracker.py to run D3S using VOT18 sequences.  
+```bash
 cd pytracking
-python run_webcam.py dimp dimp50    
-```  
+python run_tracker.py segm default_params --dataset vot18 --sequence <seq_name> --debug 1
+```
 
+### Evaluate the tracker using VOT
+We provide a VOT Matlab toolkit integration for the D3S tracker. There is the `tracker_D3S.m` Matlab file in the `pytracking/utils`, which can be connected with the toolkit. It uses the `vot_wrapper.py` script to integrate the tracker to the toolkit.
 
-## What's next?
+#### Training the network
+The D3S is pre-trained for segmentation task only on the YouTube VOS dataset. Download the VOS training dataset (2018 version) and copy the files `vos-list-train.txt` and `vos-list-val.txt` from `ltr/data_specs` to the `train` directory of the VOS dataset. 
+Set the `vos_dir` variable in `ltr/admin/local.py` to the VOS `train` directory on your machine. 
+Download the bounding boxes from [this link](http://data.vicos.si/alanl/d3s/rectangles.zip) and copy them to the sequence directories.
+Run training by running the following command:
+```bash
+python run_training.py segm segm_default
+```
 
-#### [pytracking](pytracking) - for implementing your tracker
+## Pytracking
+This is a modified version of the python framework pytracking based on **PyTorch**. We would like to thank the authors Martin Danelljan and Goutam Bhat for providing such a great framework.
 
-#### [ltr](ltr) - for training your tracker
+## Video
+Check out the [video](https://www.youtube.com/watch?v=E3mN_hCRHu0) with tracking and segmentation results of the D3S tracker.
 
-## Contributors
-
-### Main Contributors
-* [Martin Danelljan](https://martin-danelljan.github.io/)  
-* [Goutam Bhat](https://goutamgmb.github.io/)
-
-### Guest Contributors
-* [Felix Järemo-Lawin](https://liu.se/en/employee/felja34) [LWL]
-
-## Acknowledgments
-* Thanks for the great [PreciseRoIPooling](https://github.com/vacancy/PreciseRoIPooling) module.  
-* We use the implementation of the Lovász-Softmax loss from https://github.com/bermanmaxim/LovaszSoftmax.  
+## Contact
+* Alan Lukežič (email: alan.lukezic@fri.uni-lj.si)
