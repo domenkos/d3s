@@ -26,6 +26,9 @@ class Segm(BaseTracker):
             self.params.features_filter.initialize()
         self.features_initialized = True
 
+    def predicts_segmentation_mask(self):
+        return False
+
     def initialize(self, image, state, init_mask=None, *args, **kwargs):
 
         # Initialize some stuff

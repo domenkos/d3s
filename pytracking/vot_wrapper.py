@@ -1,4 +1,5 @@
-import vot
+import pytracking.vot as vot
+# import vot
 import sys
 import cv2
 import os
@@ -7,7 +8,6 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from pytracking.tracker.segm import Segm
 from pytracking.parameter.segm import default_params as vot_params
-
 
 def rect_to_poly(rect):
     x0 = rect[0]
