@@ -21,6 +21,12 @@ from pytracking.mask_to_disk import save_mask
 
 
 class Segm(BaseTracker):
+
+    def __init__(self, params):
+        super().__init__( params )
+    #     # self.params =
+    #     self.initialize( image, region)
+
     def initialize_features(self):
         if not getattr(self, 'features_initialized', False):
             self.params.features_filter.initialize()
